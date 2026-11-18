@@ -57,11 +57,11 @@ def equations_position(vars, theta2):
     eq2 = l3 * np.sin(theta3) - l4 * np.sin(theta4) + l2 * np.sin(theta2)
 
     # Velocity
-    eq3 = l4 * omega4 * np.sin(theta4) - l3 * omega3 * np.sin(theta3) - l2 * omega2 ** 2 * np.sin(theta2)
-    eq4 = l2 * omega2 ** 2 * np.cos(theta2) - l4 * omega4 * np.cos(theta4) + l3 * omega3 * np.cos(theta3)
+    eq3 = l4 * omega4 * np.sin(theta4) - l3 * omega3 * np.sin(theta3) - l2 * omega2 * 2 * np.sin(theta2)
+    eq4 = l2 * omega2 * 2 * np.cos(theta2) - l4 * omega4 * np.cos(theta4) + l3 * omega3 * np.cos(theta3)
 
     # Acceleration
-    eq5 = (l2 * alpha2 * np.cos(theta2) - l2 * omega2 * np.sin(theta2)
+    eq5 = (l2 * alpha2 * np.cos(theta2) - l2 * omega2 ** 2 * np.sin(theta2)
            + l3 * alpha3 * np.cos(theta3) - l3 * omega3 ** 2 * np.sin(theta3)
            - l4 * alpha4 * np.cos(theta4) + l4 * omega4 ** 2 * np.sin(theta4))
     eq6 = (l2 * alpha2 * np.sin(theta2) - l2 * omega2 ** 2 * np.cos(theta2)
