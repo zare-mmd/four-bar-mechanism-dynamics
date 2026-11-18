@@ -11,3 +11,4 @@ Animates the mechanism's motion over one full crank revolution
 Python, NumPy, SciPy (fsolve), Matplotlib
 # Background
 This was required coursework, submitted and graded as part of the Dynamics of Machinery course.
+![Four-bar animation](four_bar_animation.gif)
