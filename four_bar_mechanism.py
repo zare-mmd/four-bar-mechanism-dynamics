@@ -2,11 +2,11 @@
 # Dynamics of Machinery (DOM) project
 # Student ID: 40030570
 #
-# Kinematic and dynamic force analysis of a four-bar mechanism.
-# Solves position, velocity and acceleration equations for the coupler
-# and rocker links, then computes joint reaction forces for each link
-# using a Newton-Euler style force balance. Includes an animation of
-# the mechanism over one full revolution of the crank.
+# Kinematic analysis and simplified force analysis of a four-bar mechanism.
+# Solves the position, velocity and acceleration loop-closure equations for
+# the coupler and rocker links, then estimates the inertia forces on each
+# link from the kinematics. Includes a Grashof check, solver convergence
+# warnings, and an animation of the mechanism over one crank revolution.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -42,6 +42,13 @@ m2 = get_positive_input('Please enter mass of the second link: ')
 m3 = get_positive_input('Please enter mass of the third link: ')
 m4 = get_positive_input('Please enter mass of the fourth link: ')
 
+# Grashof check: the crank (link 2) can only make a full revolution if
+# s + l <= p + q AND the crank is the shortest link.
+lengths = sorted([l1, l2, l3, l4])
+if not (lengths[0] + lengths[3] <= lengths[1] + lengths[2] and l2 == lengths[0]):
+    print('Warning: with these lengths the crank cannot make a full revolution '
+          '(Grashof condition not met). Some crank angles have no valid solution.')
+
 # Range of crank angle theta2 over one full revolution
 theta2_values = np.linspace(0, 2 * np.pi, 720)
 alpha2 = 0  # Assume zero angular acceleration for the crank (constant omega2)
@@ -72,7 +79,7 @@ def equations_position(vars, theta2):
 
 
 def equations_force(vars, alpha2, omega2):
-    """Compute joint reaction forces on each link from its kinematic state."""
+    """Estimate the inertia forces on each link from its kinematic state (simplified model)."""
     theta2, theta3, theta4, omega3, omega4, alpha3, alpha4 = vars
 
     # Forces in X-direction for each link
@@ -101,6 +108,7 @@ omega4_values = []
 alpha3_values = []
 alpha4_values = []
 forces = []
+failed_angles = []
 
 # Initial guess for [theta3, theta4, omega3, omega4, alpha3, alpha4]
 initial_guess = [np.pi / 4, np.pi / 2, 0, 0, 0, 0]  # theta3, theta4 must not start at 0: that guess is degenerate and fsolve gets stuck
@@ -108,7 +116,9 @@ initial_guess = [np.pi / 4, np.pi / 2, 0, 0, 0, 0]  # theta3, theta4 must not st
 # Solve the equations for each crank angle, using the previous solution
 # as the initial guess for the next angle (continuation method)
 for theta2 in theta2_values:
-    solution = fsolve(equations_position, initial_guess, args=(theta2,))
+    solution, info, ier, msg = fsolve(equations_position, initial_guess, args=(theta2,), full_output=True)
+    if ier != 1:  # fsolve did not converge: the mechanism cannot be assembled at this angle
+        failed_angles.append(np.degrees(theta2))
     theta3_values.append(solution[0])
     theta4_values.append(solution[1])
     omega3_values.append(solution[2])
@@ -120,6 +130,10 @@ for theta2 in theta2_values:
     forces.append(force_solution)
 
     initial_guess = solution
+
+if failed_angles:
+    print(f'Warning: no valid solution at {len(failed_angles)} of {len(theta2_values)} crank angles '
+          f'(from {min(failed_angles):.1f} to {max(failed_angles):.1f} degrees). Results there are not physical.')
 
 # Plot theta3 and theta4 as functions of theta2
 plt.figure(figsize=(12, 6))
